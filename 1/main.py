@@ -123,7 +123,5 @@ def main():
 
 
 if __name__ == '__main__':
-    # start_time = datetime.datetime.now()
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     main()
-    # print(datetime.datetime.now() - start_time)
