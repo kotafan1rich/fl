@@ -7,6 +7,7 @@ from aiohttp import client_exceptions
 import datetime
 from math import floor
 from loguru import logger
+import os
 
 logger.add("app.log", level="INFO")
 
@@ -125,19 +126,20 @@ async def get_res():
     clean = get_clean_res(result)
     return set(clean)
 
-def write_res_in_file(res):
-    file_name = 'result.txt'
-    
-    with open(file_name, 'w', encoding='utf-8') as f:
+def write_res_in_file(res, file_name='result.txt'):
+    if '.txt' not in file_name:
+        file_name += '.txt'
+    with open(file_name, 'w+', encoding='utf-8') as f:
         for url in res:
-            f.writelines(url)
-    logger.info(file_name)
+            f.write(f'{url}\n')
+    logger.info(f'Сохранено - {file_name}')
 
 
 @time_of_function
 def main():
+    file_name = input('Ведите имя файла, куда будет сохранён результат (без .txt): ')
     res = asyncio.run(get_res())
-    write_res_in_file(res)
+    write_res_in_file(res, file_name)
 
 
 if __name__ == '__main__':
