@@ -7,7 +7,6 @@ from aiohttp import client_exceptions
 import datetime
 from math import floor
 from loguru import logger
-import os
 
 logger.add("app.log", level="INFO")
 
