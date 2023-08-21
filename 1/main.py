@@ -6,6 +6,9 @@ from aiohttp import ClientSession
 from aiohttp import client_exceptions
 import datetime
 from math import floor
+from loguru import logger
+
+logger.add("app.log", level="INFO")
 
 URL = 'https://www.realitica.com/index.php?for=Prodaja&opa=Budva&type%5B%5D=&type%5B%5D=Apartment&price-min=30000&price-max=150000&since-day=p-anytime&qry=&lng=hr'
 
@@ -16,7 +19,7 @@ def time_of_function(function):
     def wrapped(*args):
         start_time = datetime.datetime.now()
         res = function(*args)
-        print(datetime.datetime.now() - start_time)
+        logger.info(f'Время выполнения программы - {datetime.datetime.now() - start_time}')
         return res
     return wrapped
 
@@ -35,8 +38,8 @@ async def get_urls_from_cards(url: str, session):
         try:
             if a_class.text == 'Detaljno':
                 urls.append(a_class.get('href'))
-        except:
-            print(url, a_class, sep='\n')
+        except Exception as ex:
+            logger.error(f'{ex}: Ссылка на одну из карточек была не найдена {url}')
     return urls
 
 
@@ -53,6 +56,7 @@ async def get_profile(url: str, session):
                     if (await session.get(profile_url)).status == 200:
                         return profile_url
     except AttributeError:
+        logger.error(f'Профиль не найден {url.split("&")[0]}')
         return None
 
 
@@ -103,23 +107,37 @@ async def get_res():
     URL = 'https://www.realitica.com/index.php?cur_page={}&for=Prodaja&opa=Budva&type%5B%5D=&type%5B%5D=Apartment&price-min=30000&price-max=150000&since-day=p-anytime&qry=&lng=hr'
 
     max_page = get_max_page(URL.format(0))
+    logger.info(f'Кол-во страниц {max_page + 1}')
     urls = [URL.format(page) for page in range(max_page + 1)]
+    logger.success('Ссылки на страницы получены')
 
     async with ClientSession() as session:
         cards_urls = await gather_urls_from_cards(urls, session)
+        logger.success('Ссылки на каточки со страниц получены')
         all_cards_urls = []
         for lst in cards_urls:
             all_cards_urls += lst
         profiles = set(await gather_profiles(all_cards_urls, session))
+        logger.success('Ссылки на профили получены')
         result = await gather_success_profiles(profiles, session)
+        logger.success('Результаты получены')
 
     clean = get_clean_res(result)
     return set(clean)
 
+def write_res_in_file(res):
+    file_name = 'result.txt'
+    
+    with open(file_name, 'w', encoding='utf-8') as f:
+        for url in res:
+            f.writelines(url)
+    logger.info(file_name)
+
 
 @time_of_function
 def main():
-    print(asyncio.run(get_res()))
+    res = asyncio.run(get_res())
+    write_res_in_file(res)
 
 
 if __name__ == '__main__':
