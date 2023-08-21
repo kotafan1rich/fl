@@ -20,7 +20,8 @@ def time_of_function(function):
     def wrapped(*args):
         start_time = datetime.datetime.now()
         res = function(*args)
-        logger.info(f'Время выполнения программы - {datetime.datetime.now() - start_time}')
+        logger.info(
+            f'Время выполнения программы - {datetime.datetime.now() - start_time}')
         return res
     return wrapped
 
@@ -40,7 +41,8 @@ async def get_urls_from_cards(url: str, session):
             if a_class.text == 'Detaljno':
                 urls.append(a_class.get('href'))
         except Exception as ex:
-            logger.error(f'{ex}: Ссылка на одну из карточек была не найдена {url}')
+            logger.error(
+                f'{ex}: Ссылка на одну из карточек была не найдена {url}')
     return urls
 
 
@@ -126,6 +128,7 @@ async def get_res():
     clean = get_clean_res(result)
     return set(clean)
 
+
 def write_res_in_file(res, file_name='result.txt'):
     if '.txt' not in file_name:
         file_name += '.txt'
@@ -137,7 +140,8 @@ def write_res_in_file(res, file_name='result.txt'):
 
 @time_of_function
 def main():
-    file_name = input('Ведите имя файла, куда будет сохранён результат (без .txt): ')
+    file_name = input(
+        'Ведите имя файла, куда будет сохранён результат (без .txt): ')
     res = asyncio.run(get_res())
     write_res_in_file(res, file_name)
 
