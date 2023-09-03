@@ -49,7 +49,7 @@ class ParserRealitica:
         return await asyncio.gather(*tasks)
 
     @staticmethod
-    def get_cards_urls_list(cards_urls):
+    def _get_cards_urls_list(cards_urls):
         all_cards_urls = []
         for lst in cards_urls:
             all_cards_urls += lst
@@ -81,17 +81,17 @@ class ParserRealitica:
             if 0 < len(cards) <= 5:
                 return url
 
-    async def gather_profiles(self, cards_urls):
+    async def _gather_profiles(self, cards_urls):
         tasks = [asyncio.create_task(self._get_profile(url)) for url in cards_urls]
         return await asyncio.gather(*tasks)
 
-    async def gather_success_profiles(self, profiles):
+    async def _gather_success_profiles(self, profiles):
         tasks = [asyncio.create_task(self._get_result_urls(
             profile_url)) for profile_url in profiles]
         return await asyncio.gather(*tasks)
 
     @staticmethod
-    def get_clean_res(res):
+    def _get_clean_res(res):
         return [url for url in res if url]
 
     async def _get_res(self):
@@ -105,16 +105,16 @@ class ParserRealitica:
             self.session = session
             cards_urls = await self.gather_urls_from_cards(urls)
             logger.success('Ссылки на каточки со страниц получены')
-            all_cards_urls = self.get_cards_urls_list(cards_urls)
-            profiles = set(await self.gather_profiles(all_cards_urls))
+
+            all_cards_urls = self._get_cards_urls_list(cards_urls)
+            profiles = set(await self._gather_profiles(all_cards_urls))
             logger.success('Ссылки на профили получены')
-            result = await self.gather_success_profiles(profiles)
-            logger.success('Результаты получены')
+
+            result = await self._gather_success_profiles(profiles)
 
             clean = self.get_clean_res(result)
+            logger.success(f'Результаты получены: кол-во ссылок - {len(clean)}')
             return set(clean)
 
     def get_result(self):
         return asyncio.run(self._get_res())
-
-

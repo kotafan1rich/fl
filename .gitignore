@@ -125,3 +125,4 @@ cython_debug/
 
 result.txt
 *.log
+res.json
